@@ -324,7 +324,12 @@ export class DocumentAiService implements OnModuleInit {
 
                 const docxBuffer = this.docxService.generateDocx(user.doc_chat_template, finalData);
                 const fileId = uuidv4();
-                const storageDir = `/var/data/render/generated_documents`;
+                
+                // Используем временную папку для продакшена или локальную папку для разработки
+                const storageDir = process.env.NODE_ENV === 'production' 
+                    ? path.join(process.cwd(), 'generated_documents')
+                    : `/var/data/render/generated_documents`;
+                    
                 if (!fs.existsSync(storageDir)) { fs.mkdirSync(storageDir, { recursive: true }); }
                 const storagePath = path.join(storageDir, `${fileId}.docx`);
                 fs.writeFileSync(storagePath, docxBuffer);
