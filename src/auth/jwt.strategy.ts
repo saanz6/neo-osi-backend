@@ -8,7 +8,12 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private configService: ConfigService) {
-    const secret = configService.get<string>('JWT_SECRET');
+    const secret = configService.get<string>('JWT_SECRET') || process.env.JWT_SECRET;
+    
+    // Отладочная информация
+    console.log('JWT_SECRET from ConfigService:', configService.get<string>('JWT_SECRET'));
+    console.log('JWT_SECRET from process.env:', process.env.JWT_SECRET);
+    console.log('Final secret:', secret);
 
     if (!secret) {
       throw new Error('JWT_SECRET не найден в .env файле! Приложение не может быть запущено.');

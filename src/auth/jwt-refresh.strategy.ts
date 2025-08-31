@@ -8,7 +8,12 @@ import { ConfigService } from '@nestjs/config';
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(configService: ConfigService) {
     // 1. Сначала получаем секрет в переменную
-    const secret = configService.get<string>('JWT_REFRESH_SECRET');
+    const secret = configService.get<string>('JWT_REFRESH_SECRET') || process.env.JWT_REFRESH_SECRET;
+
+    // Отладочная информация
+    console.log('JWT_REFRESH_SECRET from ConfigService:', configService.get<string>('JWT_REFRESH_SECRET'));
+    console.log('JWT_REFRESH_SECRET from process.env:', process.env.JWT_REFRESH_SECRET);
+    console.log('Final refresh secret:', secret);
 
     // 2. Добавляем "защиту от дурака": если секрета нет, приложение не запустится
     if (!secret) {
