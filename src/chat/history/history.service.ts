@@ -51,6 +51,12 @@ export class ChatHistoryService {
    * @param type - Тип чата.
    */
   async addMessageToHistory(userId: number, userContent: string, modelContent: string, type: ChatType): Promise<void> {
+    // Проверяем что контент не пустой
+    if (!userContent || !modelContent) {
+      console.error(`Попытка добавить пустые сообщения в историю: userContent="${userContent}", modelContent="${modelContent}"`);
+      return;
+    }
+
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       console.error(`Попытка добавить историю для несуществующего пользователя с ID: ${userId}`);

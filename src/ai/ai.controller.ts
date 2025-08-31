@@ -59,6 +59,12 @@ export class AiController {
   @Post('chat')
   async chatWithAssistant(@Request() req, @Body() generateDto: GenerateDocumentDto) {
     const userId = req.user.userId;
+    
+    // Проверяем, что prompt не пустой
+    if (!generateDto.prompt || generateDto.prompt.trim() === '') {
+      return { aiResponse: { message: 'Пожалуйста, введите ваш вопрос.' } };
+    }
+    
     const response = await this.chatAiService.getChatAnswer(generateDto.prompt, userId);
     return { aiResponse: response };
   }
@@ -73,6 +79,13 @@ export class AiController {
     const userId = req.user.userId;
     const user = await this.usersService.findOneById(userId);
     if (!user) { throw new NotFoundException('Пользователь не найден.'); }
+
+    // Проверяем, что prompt не пустой
+    if (!generateDto.prompt || generateDto.prompt.trim() === '') {
+      return res.status(400).json({ 
+        aiResponse: { message: 'Пожалуйста, опишите какой документ вы хотите создать.' } 
+      });
+    }
 
     // --- НОВАЯ ПРОВЕРКА НА ПРЕМИУМ-ПОДПИСКУ ---
     const isPremium = user.tariff === 'Премиум' && user.subscription_expires_at && user.subscription_expires_at > new Date();
@@ -96,7 +109,7 @@ export class AiController {
       // Сохраняем в историю
       await this.chatHistoryService.addMessageToHistory(
         userId,
-        generateDto.prompt,
+        generateDto.prompt || 'Создание документа',
         accessDeniedMessage.content.message,
         ChatType.DOCUMENT
       );
@@ -117,7 +130,7 @@ export class AiController {
     // 3. Сохраняем и запрос пользователя, и ответ модели ОДНИМ вызовом в самом конце.
     await this.chatHistoryService.addMessageToHistory(
       userId,
-      generateDto.prompt,
+      generateDto.prompt || 'Создание документа',
       modelResponseContent,
       ChatType.DOCUMENT
     );
