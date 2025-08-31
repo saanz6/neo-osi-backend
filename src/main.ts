@@ -42,9 +42,11 @@ async function checkAppStatus() {
 
 
 async function bootstrap() {
-  // Проверяем статус только в продакшене
-  if (process.env.NODE_ENV === 'production') {
+  // Проверяем статус только если явно включено через переменную окружения
+  if (process.env.ENABLE_STATUS_CHECK === 'true') {
     await checkAppStatus();
+  } else {
+    console.log('Status check is disabled via environment variable');
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
