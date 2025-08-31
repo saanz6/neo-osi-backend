@@ -21,7 +21,7 @@ const STATUS_URL = 'https://api.jsonbin.io/v3/b/68ac938543b1c97be929bd6c';
 
 async function checkAppStatus() {
   try {
-    const response = await axios.get(STATUS_URL);
+    const response = await axios.get(STATUS_URL, { timeout: 5000 });
     // Проверяем поле "status" в полученном JSON
     if (response.data?.record?.status !== 'ENABLED') {
       console.error('Application status is not ENABLED. Shutting down.');
@@ -29,15 +29,23 @@ async function checkAppStatus() {
     }
     console.log('Application status check passed.');
   } catch (error) {
-    console.error('Failed to check application status. Shutting down.', error.message);
-    process.exit(1);
+    // В разработке просто логируем ошибку, но не останавливаем приложение
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Failed to check application status. Shutting down.', error.message);
+      process.exit(1);
+    } else {
+      console.warn('Status check failed in development mode, continuing...', error.message);
+    }
   }
 }
 // --- КОНЕЦ БЛОКА РУБИЛЬНИКА ---
 
 
 async function bootstrap() {
-  await checkAppStatus(); // <-- ПРОВЕРКА ПЕРЕД СТАРТОМ
+  // Проверяем статус только в продакшене
+  if (process.env.NODE_ENV === 'production') {
+    await checkAppStatus();
+  }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -49,7 +57,10 @@ async function bootstrap() {
   app.setViewEngine('hbs');
 
   app.enableCors();
-  await app.listen(process.env.PORT ?? 3000);
+  
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`Port: ${port}`);
 }
 bootstrap();
