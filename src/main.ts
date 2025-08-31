@@ -1,4 +1,7 @@
 // src/main.ts
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import * as crypto from 'crypto';
 
 if (!global.crypto) {
@@ -42,12 +45,10 @@ async function checkAppStatus() {
 
 
 async function bootstrap() {
-  // Проверяем статус только если явно включено через переменную окружения
-  if (process.env.ENABLE_STATUS_CHECK === 'true') {
-    await checkAppStatus();
-  } else {
-    console.log('Status check is disabled via environment variable');
-  }
+  // Status check временно отключена
+  // if (process.env.ENABLE_STATUS_CHECK === 'true') {
+  //   await checkAppStatus();
+  // }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
